@@ -1,17 +1,51 @@
 # TinyEVM
 
-We try to implement the Ethereum Virtual Machine from scratch using Python.
+We implement the Ethereum Virtual Machine from scratch using Python.
 
 ## What is the EVM?
 
-A virtual machine is an emulation of a architecture. This has the advantages.
-First, it makes the code hardware independent, and second, it makes code execution deterministic.
-Obviously, nothing comes without trade-offs, here it is a bit of excess compute.
+Simply put, EVM is Ethereum's runtime environment.
+This means the execution of every smart contract instruction, that takes place on Ethereum, is executed by the EVM.
+EVM is designed to be deterministic, and since its a virtual machine it can target different hardware and operating systems.
 
-Ethereum as a whole can be imagined as a transaction state machine. Each transaction can be viewed as changing the world state of the Ethereum state machine. The world state can be represented as a bunch of account objects. Each account has a unique address, and is either a contract or an externally owned account (EOA).
+## Execution on the EVM
 
-The EVM is Ethereum's runtime environment. This means every transaction, that takes place on Ethereum, is executed on the EVM. EVM is designed to be deterministic while being able to target lots of different hardware and operating systems. Practically, the way ethereum is implemented multiple transactions are mined together to form a block.
+Smart contracts are a set of bytecode instructions for the EVM.
+The smart contracts are stored in the code region of contract accounts, and are deployed by sending a transaction using an Externally Owned Account (EOA).
 
-## The Architecture
+When the EVM executes a smart contract, a context is created for the smart contract.
+The EVM context is made up of several components:
 
-The EVM is a stack machine and therefore [https://en.wikipedia.org/wiki/Stack_machine#Comparison_with_register_machines](Turing complete). 
+### Stack
+
+The EVM is a stack-based machine, where each stack item has a word size of 256-bits, with maximum depth of 1024.
+Each instruction is executed sequentially on the EVM, unless there is a JUMP or a JUMPI instruction.
+
+```py
+class Stack:
+    def __init__(self, max_depth=1024) -> None:
+        self.stack = []
+        self.max_depth = max_depth
+
+    def pop(self):
+        if len(self.stack) == 0:
+            raise StackUnderflow()
+        self.stack.pop()
+
+    def push(self, op: int):
+        if len(self.stack) == 1024:
+            raise StackOverflow()
+        elif op < 0 or op > 2**256-1:
+            raise InvalidOpCode()
+        else:
+            self.stack.push(op)
+```
+
+### Memory
+
+The memory is a word-addressed byte array.
+It is volatile which means it is destroyed once the smart contract finishes execution.
+
+```
+
+```
