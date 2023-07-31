@@ -1,3 +1,6 @@
+from error import InvalidStackValue, StackOverflow, StackUnderflow
+
+
 class Stack:
     def __init__(self, max_depth=1024) -> None:
         self.stack = []
@@ -8,11 +11,11 @@ class Stack:
             raise StackUnderflow()
         self.stack.pop()
 
-    def push(self, op: int):
+    def push(self, value: int):
         if len(self.stack) == 1024:
             raise StackOverflow()
-        elif op < 0 or op > 2**256-1:
-            raise InvalidOpCode()
+        elif value < 0 or value > 2**256-1:
+            raise InvalidStackValue()
         else:
-            self.stack.push(op)
+            self.stack.push(value)
       

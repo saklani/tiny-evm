@@ -14,7 +14,7 @@ Smart contracts are a set of bytecode instructions for the EVM.
 The smart contracts are stored in the code region of contract accounts, and are deployed by sending a transaction using an Externally Owned Account (EOA).
 
 When the EVM executes a smart contract, a context is created for the smart contract.
-The EVM context is made up of several components:
+The EVM context is made up of:
 
 ### Stack
 
@@ -32,7 +32,7 @@ class Stack:
             raise StackUnderflow()
         self.stack.pop()
 
-    def push(self, op: int):
+    def push(self, value: int):
         if len(self.stack) == 1024:
             raise StackOverflow()
         elif op < 0 or op > 2**256-1:
@@ -45,6 +45,7 @@ class Stack:
 
 The memory is a word-addressed byte array.
 It is volatile which means it is destroyed once the smart contract finishes execution.
+At the start of the execution context it is initialized to 0.
 
 ```
 

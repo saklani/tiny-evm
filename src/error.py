@@ -1,5 +1,5 @@
-class InvalidOpCode(Exception):
-    """Invalid Op Code"""
+class InvalidStackValue(Exception):
+    """Invalid Stack Value"""
 
 
 class StackUnderflow(Exception):
