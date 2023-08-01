@@ -9,7 +9,9 @@ class Stack:
     def pop(self):
         if len(self.stack) == 0:
             raise StackUnderflow()
+        top = self.stack[-1]
         self.stack.pop()
+        return top
 
     def push(self, value: int):
         if len(self.stack) == 1024:
@@ -17,5 +19,5 @@ class Stack:
         elif value < 0 or value > 2**256-1:
             raise InvalidStackValue()
         else:
-            self.stack.push(value)
+            self.stack.append(value)
       
