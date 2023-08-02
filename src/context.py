@@ -14,7 +14,7 @@ class Context:
         self.return_value = None
         self.run = True
 
-    def halt(self):
+    def stop(self):
         self.run = False
 
     def jump(self, target: int):
