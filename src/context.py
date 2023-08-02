@@ -11,6 +11,7 @@ class Context:
         self.program_counter = 0
         self.stack = Stack()
         self.storage = storage
+        self.return_value = None
         self.run = True
 
     def halt(self):

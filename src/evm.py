@@ -1,23 +1,26 @@
 from context import Context
 from instructions import instructions
 from storage import Storage
+from util import from_hex
 
 
 class EVM:
     def __init__(self) -> None:
         self.storage = Storage()
 
-    def execute(self, code: str) -> None:
+    def execute(self, code: str) -> str:
         context = Context(code=code, storage=self.storage)
         while context.run and context.program_counter < len(code):
-            opcode = '0x' + \
-                code[context.program_counter:  context.program_counter + 2]
+            opcode = from_hex(code[context.program_counter:  context.program_counter + 2])
             context.next()
-            instruction = instructions[int(opcode, base=16)]
+            instruction = instructions[opcode]
             instruction.fn(context)
+            
+        if context.return_value:
+           return context.return_value
 
 
 if __name__ == "__main__":
     evm = EVM()
-    code = "600660070200"
-    evm.execute(code)
+    code = "604260005260206000F3"
+    print(evm.execute(code))
