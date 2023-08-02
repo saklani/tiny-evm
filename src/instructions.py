@@ -1,49 +1,56 @@
-from stack import Stack
+from context import Context
+from instruction import Instruction
 
 
-def add(stack: Stack):
-    a = int('0x' + str(stack.pop()), base=16)
-    b = int('0x' + str(stack.pop()), base=16)
-    push_(stack=stack, value=a+b)
+# Helper
+
+def to_hex(value: int) -> int:
+    return int('0x' + str(value), base=16)
+
+def push(context: Context, size: int) -> None:
+    value = context.code[context.program_counter: context.program_counter + size]
+    context.stack.push(int('0x' + value, base=16))
+    context.next()
 
 
-def mul(stack: Stack):
-    a = int('0x' + str(stack.pop()), base=16)
-    b = int('0x' + str(stack.pop()), base=16)
-    push_(stack=stack, value=a*b)
+# Instruction Implementation
+
+def add(context: Context):
+    a = to_hex(context.stack.pop())
+    b = to_hex(context.stack.pop())
+    context.stack.push(value=a+b)
 
 
-def push(stack: Stack, bytes: str, size: int):
-    value = int('0x' + bytes[:size * 2], 16)
-    stack.push(value=value)
-
-def push_(stack: Stack, value: int):
-    stack.push(value=value)
-
-def push0(stack: Stack, bytes: str):
-    push(stack=stack, bytes=bytes, size=0)
+def mul(context: Context):
+    a = to_hex(context.stack.pop())
+    b = to_hex(context.stack.pop())
+    context.stack.push(value=a*b)
 
 
-def push1(stack: Stack, bytes: str):
-    push(stack=stack, bytes=bytes, size=1)
+def push0(context: Context):
+    context.stack.push(value=0x0)
 
 
-def sub(stack: Stack):
-    a = int('0x' + str(stack.pop()), base=16)
-    b = int('0x' + str(stack.pop()), base=16)
-    bytes = str(a - b)
-    push_(stack=stack, bytes=bytes)
+def push1(context: Context):
+    push(context, size=2)
 
 
-class Instruction:
-    def __init__(self, fn, minimumGas: int, name: str) -> None:
-        self.fn = fn
-        self.minimumGas = minimumGas
-        self.name = name
+def push2(context: Context):
+    push(context, size=4)
+
+
+def stop(context: Context):
+    context.halt()
+
+
+def sub(context: Context):
+    a = to_hex(context.stack.pop())
+    b = to_hex(context.stack.pop())
+    context.stack.push(value=a-b)
 
 
 instructions = {
-    0x00: Instruction(fn=None, minimumGas=0, name="STOP"),
+    0x00: Instruction(fn=stop, minimumGas=0, name="STOP"),
     0x01: Instruction(fn=add, minimumGas=3, name="ADD"),
     0x02: Instruction(fn=mul, minimumGas=5, name="MUL"),
     0x03: Instruction(fn=sub, minimumGas=3, name="SUB"),
