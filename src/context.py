@@ -9,10 +9,11 @@ class Context:
         self.code = code
         self.memory = Memory()
         self.program_counter = 0
-        self.stack = Stack()
-        self.storage = storage
         self.return_value = None
         self.run = True
+        self.stack = Stack()
+        self.storage = storage
+
 
     def stop(self):
         self.run = False
