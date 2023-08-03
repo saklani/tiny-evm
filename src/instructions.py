@@ -13,15 +13,40 @@ def __push(context: Context, size: int) -> None:
 # Instruction Implementation
 
 
+def __stop(context: Context):
+    context.stop()
+
+
 def __add(context: Context):
     a = context.stack.pop()
     b = context.stack.pop()
     context.stack.push(value=a+b)
 
 
+def __mul(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a*b)
+
+
+def __sub(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a-b)
+
+
 def __div(context: Context):
     a = context.stack.pop()
     b = context.stack.pop()
+    if b == 0:
+        context.stack.push(value=0)
+    else:
+        context.stack.push(value=a//b)
+
+
+def __sdiv(context: Context):
+    a = calculate_twos_complement(context.stack.pop())
+    b = calculate_twos_complement(context.stack.pop())
     if b == 0:
         context.stack.push(value=0)
     else:
@@ -37,16 +62,26 @@ def __mod(context: Context):
         context.stack.push(value=a % b)
 
 
+def __smod(context: Context):
+    a = calculate_twos_complement(context.stack.pop())
+    b = calculate_twos_complement(context.stack.pop())
+
+    if b == 0:
+        context.stack.push(value=0)
+    else:
+        context.stack.push(value=a % b)
+
+
+def __mload(context: Context):
+    offset = context.stack.pop()
+    value = context.memory.load(offset)
+    context.stack.push(value)
+
+
 def __mstore(context: Context):
     offset = context.stack.pop()
     value = context.stack.pop()
     context.memory.store(offset, value)
-
-
-def __mul(context: Context):
-    a = context.stack.pop()
-    b = context.stack.pop()
-    context.stack.push(value=a*b)
 
 
 def __push0(context: Context):
@@ -75,35 +110,6 @@ def __return(context: Context):
     context.return_value = context.memory.load(offset)
 
 
-def __sdiv(context: Context):
-    a = calculate_twos_complement(context.stack.pop())
-    b = calculate_twos_complement(context.stack.pop())
-    if b == 0:
-        context.stack.push(value=0)
-    else:
-        context.stack.push(value=a//b)
-
-
-def __smod(context: Context):
-    a = calculate_twos_complement(context.stack.pop())
-    b = calculate_twos_complement(context.stack.pop())
-
-    if b == 0:
-        context.stack.push(value=0)
-    else:
-        context.stack.push(value=a % b)
-
-
-def __stop(context: Context):
-    context.stop()
-
-
-def __sub(context: Context):
-    a = context.stack.pop()
-    b = context.stack.pop()
-    context.stack.push(value=a-b)
-
-
 INSTRUCTIONS = {
     0x00: Instruction(fn=__stop, minimumGas=0, name="STOP"),
     0x01: Instruction(fn=__add, minimumGas=3, name="ADD"),
@@ -114,6 +120,7 @@ INSTRUCTIONS = {
     0x06: Instruction(fn=__mod, minimumGas=5, name="MOD"),
     0x07: Instruction(fn=__smod, minimumGas=5, name="SMOD"),
 
+    0x51: Instruction(fn=__mload, minimumGas=5, name="MLOAD"),
     0x52: Instruction(fn=__mstore, minimumGas=3, name="MSTORE"),
 
     0x5F: Instruction(fn=__push0, minimumGas=2, name="PUSH0"),
