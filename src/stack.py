@@ -1,6 +1,3 @@
-from error import InvalidStackValue, StackOverflow, StackUnderflow
-
-
 class Stack:
     def __init__(self, max_depth=1024) -> None:
         self.stack = []
@@ -21,3 +18,16 @@ class Stack:
         else:
             self.stack.append(value)
       
+
+# Errors
+
+class InvalidStackValue(Exception):
+    """Invalid Stack Value"""
+
+
+class StackUnderflow(Exception):
+    """Stack Underflow"""
+
+
+class StackOverflow(Exception):
+    """Stack Overflow"""
