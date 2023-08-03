@@ -8,7 +8,7 @@ class Memory:
             raise MemoryOffsetUnderflow()
 
         if offset >= self.size():
-            raise MemoryOffsetOverflow()
+            return 0
 
         return self.memory[offset]
 
