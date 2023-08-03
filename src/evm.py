@@ -10,11 +10,11 @@ class EVM:
 
     def get_instruction(self, context:  Context):
         """decodes instruction from the bytecode"""
- 
+
         # Return STOP if program counter reaches end of program
-        if context.program_counter >= len(code): 
+        if context.program_counter >= len(code):
             return INSTRUCTIONS[0x00]
-        
+
         # Extract byte from code
         opcode = from_hex(
             code[context.program_counter:  context.program_counter + 2])
