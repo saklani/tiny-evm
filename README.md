@@ -1,6 +1,8 @@
 # TinyEVM
 
 We implement the Ethereum Virtual Machine from scratch using Python.
+The goal is to make the implementation simple to read, and the logic easy to follow.
+This README contains a writeup describing how the EVM works.
 
 ## What is the EVM?
 
