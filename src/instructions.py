@@ -8,7 +8,7 @@ from util import calculate_twos_complement, from_hex
 def __push(context: Context, size: int) -> None:
     value = context.code[context.program_counter: context.program_counter + size]
     context.stack.push(from_hex(value))
-    context.next()
+    context.jump(target=context.program_counter + size)
 
 # Instruction Implementation
 
