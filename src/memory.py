@@ -20,10 +20,11 @@ class Memory:
             raise InvalidMemoryValue()
 
         offset //= 32
+
         # Memory increments in multiples of 32 bytes (256 bits)
         # each value is 32 bytes
-        # So, if offset 0 - 31 the first value is overwritten
-
+        # So, if offset = 0...31 the value at 0 is overwritten,
+        # similarly if offset = 32...63 the value 1 is overwritten, and so on.
         if offset >= len(self.memory):
             self.memory.extend([0] * (offset - len(self.memory) + 1))
         self.memory[offset] = value
