@@ -20,19 +20,19 @@ def __stop(context: Context):
 def __add(context: Context):
     a = context.stack.pop()
     b = context.stack.pop()
-    context.stack.push(value=a+b)
+    context.stack.push(value=a + b)
 
 
 def __mul(context: Context):
     a = context.stack.pop()
     b = context.stack.pop()
-    context.stack.push(value=a*b)
+    context.stack.push(value=a * b)
 
 
 def __sub(context: Context):
     a = context.stack.pop()
     b = context.stack.pop()
-    context.stack.push(value=a-b)
+    context.stack.push(value=a - b)
 
 
 def __div(context: Context):
@@ -41,7 +41,7 @@ def __div(context: Context):
     if b == 0:
         context.stack.push(value=0)
     else:
-        context.stack.push(value=a//b)
+        context.stack.push(value=a // b)
 
 
 def __sdiv(context: Context):
@@ -50,7 +50,7 @@ def __sdiv(context: Context):
     if b == 0:
         context.stack.push(value=0)
     else:
-        context.stack.push(value=a//b)
+        context.stack.push(value=a // b)
 
 
 def __mod(context: Context):
@@ -70,6 +70,16 @@ def __smod(context: Context):
         context.stack.push(value=0)
     else:
         context.stack.push(value=a % b)
+
+
+def __addmod(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    N = context.stack.pop()
+    if N == 0:
+        context.stack.push(value=0)
+    else:
+        context.stack.push(value=(a + b) % N)
 
 
 def __mload(context: Context):
@@ -119,6 +129,7 @@ INSTRUCTIONS = {
     0x05: Instruction(fn=__sdiv, minimumGas=5, name="SDIV"),
     0x06: Instruction(fn=__mod, minimumGas=5, name="MOD"),
     0x07: Instruction(fn=__smod, minimumGas=5, name="SMOD"),
+    0x08: Instruction(fn=__addmod, minimumGas=5, name="ADDMOD"),
 
     0x51: Instruction(fn=__mload, minimumGas=5, name="MLOAD"),
     0x52: Instruction(fn=__mstore, minimumGas=3, name="MSTORE"),
