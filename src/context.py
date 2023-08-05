@@ -14,12 +14,11 @@ class Context:
         self.stack = Stack()
         self.storage = storage
 
-
-    def stop(self):
+    def stop(self) -> None:
         self.run = False
 
-    def jump(self, target: int):
+    def jump(self, target: int) -> None:
         self.program_counter = target
 
-    def next(self):
+    def next(self) -> None:
         self.program_counter += 2
