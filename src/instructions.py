@@ -82,6 +82,22 @@ def __addmod(context: Context):
         context.stack.push(value=(a + b) % N)
 
 
+def __mulmod(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    N = context.stack.pop()
+    if N == 0:
+        context.stack.push(value=0)
+    else:
+        context.stack.push(value=(a * b) % N)
+
+
+def __exp(context: Context):
+    a = context.stack.pop()
+    exponent = context.stack.pop()
+    context.stack.push(value=(a ** exponent) % (2 ** 256))
+
+
 def __mload(context: Context):
     offset = context.stack.pop()
     value = context.memory.load(offset)
@@ -129,7 +145,9 @@ INSTRUCTIONS = {
     0x05: Instruction(fn=__sdiv, minimumGas=5, name="SDIV"),
     0x06: Instruction(fn=__mod, minimumGas=5, name="MOD"),
     0x07: Instruction(fn=__smod, minimumGas=5, name="SMOD"),
-    0x08: Instruction(fn=__addmod, minimumGas=5, name="ADDMOD"),
+    0x08: Instruction(fn=__addmod, minimumGas=8, name="ADDMOD"),
+    0x09: Instruction(fn=__mulmod, minimumGas=8, name="MULMOD"),
+    0x0A: Instruction(fn=__exp, minimumGas=10, name="EXP"),
 
     0x51: Instruction(fn=__mload, minimumGas=5, name="MLOAD"),
     0x52: Instruction(fn=__mstore, minimumGas=3, name="MSTORE"),
