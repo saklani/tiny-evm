@@ -98,6 +98,102 @@ def __exp(context: Context):
     context.stack.push(value=(a ** exponent) % (2 ** 256))
 
 
+def __signextend(context: Context):
+    b = context.stack.pop()
+    x = context.stack.pop()
+    y = 0
+    if b <= 31:
+        t = 256 - (1 + b) * 8
+    pass
+
+
+def __lt(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a < b)
+
+
+def __gt(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a > b)
+
+
+def __slt(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a < b)
+
+
+def __sgt(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a > b)
+
+
+def __eq(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a == b)
+
+
+def __is_zero(context: Context):
+    a = context.stack.pop()
+    context.stack.push(value=a == 0)
+
+
+def __and(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a & b)
+
+
+def __or(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a | b)
+
+
+def __xor(context: Context):
+    a = context.stack.pop()
+    b = context.stack.pop()
+    context.stack.push(value=a ^ b)
+
+
+def __not(context: Context):
+    a = context.stack.pop()
+    context.stack.push(value=~a)
+
+
+def __byte(context: Context):
+    i = context.stack.pop()
+    x = context.stack.pop()
+    y = 0
+    if i <= 31:
+        bin_x = bin(x)[:2][::-1]
+        p = i * 8
+        y = int(bin_x[p: p + 8][::-1], base=2)
+    context.stack.push(value=y)
+
+
+def __shl(context: Context):
+    shift = context.stack.pop()
+    value = context.stack.pop()
+    result = 0
+    if shift < 256:
+        result = value << shift
+    context.stack.push(value=result)
+
+
+def __shr(context: Context):
+    shift = context.stack.pop()
+    value = context.stack.pop()
+    result = 0
+    if shift < 256:
+        result = value >> shift
+    context.stack.push(value=result)
+
+
 def __mload(context: Context):
     offset = context.stack.pop()
     value = context.memory.load(offset)
@@ -148,6 +244,21 @@ INSTRUCTIONS = {
     0x08: Instruction(fn=__addmod, minimumGas=8, name="ADDMOD"),
     0x09: Instruction(fn=__mulmod, minimumGas=8, name="MULMOD"),
     0x0A: Instruction(fn=__exp, minimumGas=10, name="EXP"),
+    0x0B: Instruction(fn=__signextend, minimumGas=5, name="SIGNEXTEND"),
+    0x10: Instruction(fn=__lt, minimumGas=3, name="LT"),
+    0x11: Instruction(fn=__gt, minimumGas=3, name="GT"),
+    0x12: Instruction(fn=__slt, minimumGas=3, name="SLT"),
+    0x13: Instruction(fn=__sgt, minimumGas=3, name="SGT"),
+    0x14: Instruction(fn=__eq, minimumGas=3, name="EQ"),
+    0x15: Instruction(fn=__is_zero, minimumGas=3, name="ISZERO"),
+    0x16: Instruction(fn=__and, minimumGas=3, name="AND"),
+    0x17: Instruction(fn=__or, minimumGas=3, name="OR"),
+    0x18: Instruction(fn=__xor, minimumGas=3, name="XOR"),
+    0x19: Instruction(fn=__not, minimumGas=3, name="NOT"),
+    0x1A: Instruction(fn=__byte, minimumGas=3, name="BYTE"),
+    0x1B: Instruction(fn=__shl,  minimumGas=3, name="SHL"),
+    0x1C: Instruction(fn=__shr,  minimumGas=3, name="SHR"),
+
 
     0x51: Instruction(fn=__mload, minimumGas=5, name="MLOAD"),
     0x52: Instruction(fn=__mstore, minimumGas=3, name="MSTORE"),
