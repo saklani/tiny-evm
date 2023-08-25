@@ -3,14 +3,17 @@ class Memory:
     def __init__(self):
         self.memory = []
 
-    def load(self, offset: int):
+    def load(self, offset: int, size: int = -1):
         if offset < 0:
             raise MemoryOffsetUnderflow()
 
         if offset >= self.size():
             return 0
 
-        return self.memory[offset]
+        if size == -1:
+            return self.memory[offset]
+        else:
+            return bin(self.memory[offset])[2:size * 8]
 
     def store(self, offset: int, value: int):
         if offset < 0:

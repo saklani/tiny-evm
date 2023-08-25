@@ -1,6 +1,6 @@
-from memory import Memory
-from stack import Stack
-from storage import Storage
+from tinyevm.memory import Memory
+from tinyevm.stack import Stack
+from tinyevm.storage import Storage
 
 
 class Context:
