@@ -61,10 +61,9 @@ def __div(context: Context):
 def __sdiv(context: Context):
     a = calculate_twos_complement(context.stack.pop())
     b = calculate_twos_complement(context.stack.pop())
-    if b == 0:
-        context.stack.push(value=0)
-    else:
-        context.stack.push(value=a // b)
+    value = a // b if b else 0
+    if value < 0: value = (1 << 256) + value
+    context.stack.push(value)
 
 
 def __mod(context: Context):
@@ -79,14 +78,12 @@ def __mod(context: Context):
 def __smod(context: Context):
     a = calculate_twos_complement(context.stack.pop())
     b = calculate_twos_complement(context.stack.pop())
-
-    if b == 0:
-        context.stack.push(value=0)
-    else:
-        context.stack.push(value=a % b)
+    value = a % b if b else 0
+    if value < 0: value = (1 << 256) + value
+    context.stack.push(value)
 
 
-def __addmod(context: Context):
+def __add_mod(context: Context):
     a = context.stack.pop()
     b = context.stack.pop()
     N = context.stack.pop()
@@ -96,7 +93,7 @@ def __addmod(context: Context):
         context.stack.push(value=(a + b) % N)
 
 
-def __mulmod(context: Context):
+def __mul_mod(context: Context):
     a = context.stack.pop()
     b = context.stack.pop()
     N = context.stack.pop()
@@ -112,14 +109,15 @@ def __exp(context: Context):
     context.stack.push(value=(a ** exponent) % (2 ** 256))
 
 
-def __signextend(context: Context):
+def __sign_extend(context: Context):
     b = context.stack.pop()
     x = context.stack.pop()
-    y = 0
-    if b <= 31:
-        t = 256 - (1 + b) * 8
-        
-    pass
+    y = calculate_twos_complement(x, bits=8)
+    if x > 127 and b <= 31:
+        t = 256 - b * 8
+        sign_bit = (1 << t) - 1
+        y = (sign_bit ^ x) ^ x
+    context.stack.push(y)
 
 
 def __lt(context: Context):
@@ -135,14 +133,14 @@ def __gt(context: Context):
 
 
 def __slt(context: Context):
-    a = context.stack.pop()
-    b = context.stack.pop()
+    a = calculate_twos_complement(context.stack.pop())
+    b = calculate_twos_complement(context.stack.pop())
     context.stack.push(value=a < b)
 
 
 def __sgt(context: Context):
-    a = context.stack.pop()
-    b = context.stack.pop()
+    a = calculate_twos_complement(context.stack.pop())
+    b = calculate_twos_complement(context.stack.pop())
     context.stack.push(value=a > b)
 
 
@@ -194,10 +192,11 @@ def __byte(context: Context):
 def __shl(context: Context):
     shift = context.stack.pop()
     value = context.stack.pop()
-    result = 0
+    value = 0
     if shift < 256:
-        result = value << shift
-    context.stack.push(value=result)
+        value = value << shift
+    value = (1 << 256 - 1) & value
+    context.stack.push(value)
 
 
 def __shr(context: Context):
@@ -384,10 +383,10 @@ INSTRUCTIONS = {
     0x05: Instruction(fn=__sdiv, minimumGas=5, name="SDIV"),
     0x06: Instruction(fn=__mod, minimumGas=5, name="MOD"),
     0x07: Instruction(fn=__smod, minimumGas=5, name="SMOD"),
-    0x08: Instruction(fn=__addmod, minimumGas=8, name="ADDMOD"),
-    0x09: Instruction(fn=__mulmod, minimumGas=8, name="MULMOD"),
+    0x08: Instruction(fn=__add_mod, minimumGas=8, name="ADDMOD"),
+    0x09: Instruction(fn=__mul_mod, minimumGas=8, name="MULMOD"),
     0x0A: Instruction(fn=__exp, minimumGas=10, name="EXP"),
-    0x0B: Instruction(fn=__signextend, minimumGas=5, name="SIGNEXTEND"),
+    0x0B: Instruction(fn=__sign_extend, minimumGas=5, name="SIGNEXTEND"),
     0x10: Instruction(fn=__lt, minimumGas=3, name="LT"),
     0x11: Instruction(fn=__gt, minimumGas=3, name="GT"),
     0x12: Instruction(fn=__slt, minimumGas=3, name="SLT"),
