@@ -1,33 +1,37 @@
 class Stack:
-    def __init__(self, max_depth=1024) -> None:
-        self.data = []
+    def __init__(self, max_depth: int = 1024) -> None:
+        self.data: list[int] = []
         self.max_depth = max_depth
 
     def pop(self) -> int:
-        if len(self.data) == 0:
+        if not self.data:
             raise StackUnderflow()
-        top = self.data[-1]
-        self.data.pop()
-        return top
+        return self.data.pop()
 
     def push(self, value: int) -> None:
-        if len(self.data) == 1024:
+        if len(self.data) >= self.max_depth:
             raise StackOverflow()
-        elif value < 0 or value > 2**256-1:
+        if not (0 <= value <= 2**256 - 1):
             raise InvalidStackValue()
-        else:
-            self.data.append(value)
-      
+        self.data.append(value)
 
-# Errors
+    def peek(self, n: int = 0) -> int:
+        """Look at nth item from top (0 = top)."""
+        if n >= len(self.data):
+            raise StackUnderflow()
+        return self.data[-(n + 1)]
 
-class InvalidStackValue(Exception):
-    """Invalid Stack Value"""
+    def swap(self, n: int) -> None:
+        """Swap top with nth item below it (n >= 1)."""
+        if n >= len(self.data):
+            raise StackUnderflow()
+        self.data[-1], self.data[-(n + 1)] = self.data[-(n + 1)], self.data[-1]
 
+    def dup(self, n: int) -> None:
+        """Duplicate nth item from top to top (n >= 1)."""
+        if n > len(self.data):
+            raise StackUnderflow()
+        self.push(self.data[-n])
 
-class StackUnderflow(Exception):
-    """Stack Underflow"""
-
-
-class StackOverflow(Exception):
-    """Stack Overflow"""
+    def __len__(self) -> int:
+        return len(self.data)
