@@ -27,7 +27,7 @@ class Stack:
             raise StackUnderflow()
         self.data[-1], self.data[-(n + 1)] = self.data[-(n + 1)], self.data[-1]
 
-    def dup(self, n: int) -> None:
+    def duplicate(self, n: int) -> None:
         """Duplicate nth item from top to top (n >= 1)."""
         if n > len(self.data):
             raise StackUnderflow()
@@ -35,3 +35,17 @@ class Stack:
 
     def __len__(self) -> int:
         return len(self.data)
+
+
+# Errors
+
+class InvalidStackValue(Exception):
+    """Invalid Stack Value"""
+
+
+class StackUnderflow(Exception):
+    """Stack Underflow"""
+
+
+class StackOverflow(Exception):
+    """Stack Overflow"""

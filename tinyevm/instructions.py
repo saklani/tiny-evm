@@ -175,28 +175,28 @@ def __xor(context: Context):
 
 def __not(context: Context):
     a = context.stack.pop()
-    context.stack.push(value=~a)
+    context.stack.push(value=UINT_MAX ^ a)
 
 
 def __byte(context: Context):
     i = context.stack.pop()
     x = context.stack.pop()
-    y = 0
-    if i <= 31:
-        bin_x = bin(x)[:2][::-1]
-        p = i * 8
-        y = int(bin_x[p: p + 8][::-1], base=2)
+    if i >= 32:
+        y = 0
+    else:
+        # Extract the i-th byte from the left (big-endian)
+        y = (x >> (248 - i * 8)) & 0xFF
     context.stack.push(value=y)
 
 
 def __shl(context: Context):
     shift = context.stack.pop()
     value = context.stack.pop()
-    value = 0
-    if shift < 256:
-        value = value << shift
-    value = (1 << 256 - 1) & value
-    context.stack.push(value)
+    if shift >= 256:
+        result = 0
+    else:
+        result = (value << shift) & UINT_MAX
+    context.stack.push(result)
 
 
 def __shr(context: Context):
@@ -234,6 +234,45 @@ def __mstore(context: Context):
     offset = context.stack.pop()
     value = context.stack.pop()
     context.memory.store(offset, value)
+
+
+def __mstore8(context: Context):
+    offset = context.stack.pop()
+    value = context.stack.pop()
+    context.memory.store8(offset, value)
+
+
+def __msize(context: Context):
+    context.stack.push(context.memory.size())
+
+
+def __jump(context: Context):
+    dest = context.stack.pop()
+    context.jump(dest * 2)  # Convert byte offset to hex string offset
+
+
+def __jumpi(context: Context):
+    dest = context.stack.pop()
+    condition = context.stack.pop()
+    if condition != 0:
+        context.jump(dest * 2)
+
+
+def __jumpdest(context: Context):
+    pass  # No-op, just a valid jump destination
+
+
+def __pc(context: Context):
+    # PC points to current instruction (before incrementing)
+    context.stack.push((context.program_counter - 2) // 2)
+
+
+def __dup(context: Context, n: int):
+    context.stack.dup(n)
+
+
+def __swap(context: Context, n: int):
+    context.stack.swap(n)
 
 
 def __push0(context: Context):
@@ -369,9 +408,10 @@ def __push32(context: Context):
 
 
 def __return(context: Context):
-    context.stop()
     offset = context.stack.pop()
-    context.return_value = context.memory.load(offset)
+    size = context.stack.pop()
+    context.return_value = hex(context.memory.load(offset, size))[2:].zfill(size * 2)
+    context.stop()
 
 
 INSTRUCTIONS = {
@@ -404,8 +444,14 @@ INSTRUCTIONS = {
     0x1E: Instruction(fn=__sha3,  minimumGas=30, name="SHA3"),
 
     0x50: Instruction(fn=__pop, minimumGas=2, name="POP"),
-    0x51: Instruction(fn=__mload, minimumGas=5, name="MLOAD"),
+    0x51: Instruction(fn=__mload, minimumGas=3, name="MLOAD"),
     0x52: Instruction(fn=__mstore, minimumGas=3, name="MSTORE"),
+    0x53: Instruction(fn=__mstore8, minimumGas=3, name="MSTORE8"),
+    0x56: Instruction(fn=__jump, minimumGas=8, name="JUMP"),
+    0x57: Instruction(fn=__jumpi, minimumGas=10, name="JUMPI"),
+    0x58: Instruction(fn=__pc, minimumGas=2, name="PC"),
+    0x59: Instruction(fn=__msize, minimumGas=2, name="MSIZE"),
+    0x5B: Instruction(fn=__jumpdest, minimumGas=1, name="JUMPDEST"),
 
     0x5F: Instruction(fn=__push0, minimumGas=2, name="PUSH0"),
     0x60: Instruction(fn=__push1, minimumGas=3, name="PUSH1"),
@@ -430,8 +476,8 @@ INSTRUCTIONS = {
     0x73: Instruction(fn=__push20, minimumGas=3, name="PUSH20"),
     0x74: Instruction(fn=__push21, minimumGas=3, name="PUSH21"),
     0x75: Instruction(fn=__push22, minimumGas=3, name="PUSH22"),
-    0x77: Instruction(fn=__push23, minimumGas=3, name="PUSH23"),
-    0x77: Instruction(fn=__push24, minimumGas=2, name="PUSH24"),
+    0x76: Instruction(fn=__push23, minimumGas=3, name="PUSH23"),
+    0x77: Instruction(fn=__push24, minimumGas=3, name="PUSH24"),
     0x78: Instruction(fn=__push25, minimumGas=3, name="PUSH25"),
     0x79: Instruction(fn=__push26, minimumGas=3, name="PUSH26"),
     0x7A: Instruction(fn=__push27, minimumGas=3, name="PUSH27"),
@@ -442,5 +488,41 @@ INSTRUCTIONS = {
     0x7F: Instruction(fn=__push32, minimumGas=3, name="PUSH32"),
 
 
-    0xF3: Instruction(fn=__return, minimumGas=0, name="RETURN")
+    # DUP opcodes (0x80-0x8F)
+    0x80: Instruction(fn=lambda ctx: __dup(ctx, 1), minimumGas=3, name="DUP1"),
+    0x81: Instruction(fn=lambda ctx: __dup(ctx, 2), minimumGas=3, name="DUP2"),
+    0x82: Instruction(fn=lambda ctx: __dup(ctx, 3), minimumGas=3, name="DUP3"),
+    0x83: Instruction(fn=lambda ctx: __dup(ctx, 4), minimumGas=3, name="DUP4"),
+    0x84: Instruction(fn=lambda ctx: __dup(ctx, 5), minimumGas=3, name="DUP5"),
+    0x85: Instruction(fn=lambda ctx: __dup(ctx, 6), minimumGas=3, name="DUP6"),
+    0x86: Instruction(fn=lambda ctx: __dup(ctx, 7), minimumGas=3, name="DUP7"),
+    0x87: Instruction(fn=lambda ctx: __dup(ctx, 8), minimumGas=3, name="DUP8"),
+    0x88: Instruction(fn=lambda ctx: __dup(ctx, 9), minimumGas=3, name="DUP9"),
+    0x89: Instruction(fn=lambda ctx: __dup(ctx, 10), minimumGas=3, name="DUP10"),
+    0x8A: Instruction(fn=lambda ctx: __dup(ctx, 11), minimumGas=3, name="DUP11"),
+    0x8B: Instruction(fn=lambda ctx: __dup(ctx, 12), minimumGas=3, name="DUP12"),
+    0x8C: Instruction(fn=lambda ctx: __dup(ctx, 13), minimumGas=3, name="DUP13"),
+    0x8D: Instruction(fn=lambda ctx: __dup(ctx, 14), minimumGas=3, name="DUP14"),
+    0x8E: Instruction(fn=lambda ctx: __dup(ctx, 15), minimumGas=3, name="DUP15"),
+    0x8F: Instruction(fn=lambda ctx: __dup(ctx, 16), minimumGas=3, name="DUP16"),
+
+    # SWAP opcodes (0x90-0x9F)
+    0x90: Instruction(fn=lambda ctx: __swap(ctx, 1), minimumGas=3, name="SWAP1"),
+    0x91: Instruction(fn=lambda ctx: __swap(ctx, 2), minimumGas=3, name="SWAP2"),
+    0x92: Instruction(fn=lambda ctx: __swap(ctx, 3), minimumGas=3, name="SWAP3"),
+    0x93: Instruction(fn=lambda ctx: __swap(ctx, 4), minimumGas=3, name="SWAP4"),
+    0x94: Instruction(fn=lambda ctx: __swap(ctx, 5), minimumGas=3, name="SWAP5"),
+    0x95: Instruction(fn=lambda ctx: __swap(ctx, 6), minimumGas=3, name="SWAP6"),
+    0x96: Instruction(fn=lambda ctx: __swap(ctx, 7), minimumGas=3, name="SWAP7"),
+    0x97: Instruction(fn=lambda ctx: __swap(ctx, 8), minimumGas=3, name="SWAP8"),
+    0x98: Instruction(fn=lambda ctx: __swap(ctx, 9), minimumGas=3, name="SWAP9"),
+    0x99: Instruction(fn=lambda ctx: __swap(ctx, 10), minimumGas=3, name="SWAP10"),
+    0x9A: Instruction(fn=lambda ctx: __swap(ctx, 11), minimumGas=3, name="SWAP11"),
+    0x9B: Instruction(fn=lambda ctx: __swap(ctx, 12), minimumGas=3, name="SWAP12"),
+    0x9C: Instruction(fn=lambda ctx: __swap(ctx, 13), minimumGas=3, name="SWAP13"),
+    0x9D: Instruction(fn=lambda ctx: __swap(ctx, 14), minimumGas=3, name="SWAP14"),
+    0x9E: Instruction(fn=lambda ctx: __swap(ctx, 15), minimumGas=3, name="SWAP15"),
+    0x9F: Instruction(fn=lambda ctx: __swap(ctx, 16), minimumGas=3, name="SWAP16"),
+
+    0xF3: Instruction(fn=__return, minimumGas=0, name="RETURN"),
 }
